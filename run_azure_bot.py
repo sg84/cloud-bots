@@ -9,12 +9,6 @@ from packages.azure.mgmt.resource import ResourceManagementClient
 from packages.azure.mgmt.network import NetworkManagementClient
 from packages.azure.mgmt.compute import ComputeManagementClient
 
-'''
-    AZURE_TENANT_ID = "ddd5df49-0f38-4bfe-9be9-644b9fd630cf"
-    AZURE_CLIENT_ID = "20ab9245-03cb-4336-80d4-2853e13160a5"
-    AZURE_CLIENT_SECRET = "E3blJpjc3UR8oZ4PLOv8jt/FqieK5d+Y/KG/Fu0wnJg="
-    AZURE_SUBSCRIPTION_ID = "057f8ae2-2a3f-4428-a903-7c5610b0e056"
-'''
 
 def run_azure_bot(message,bot_module,params):
     text_output = ""
