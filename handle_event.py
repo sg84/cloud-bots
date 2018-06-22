@@ -1,32 +1,32 @@
 import re
-import os
 import boto3
 import importlib 
-from botocore.exceptions import ClientError
+from run_aws_bot import *
+from run_azure_bot import *
 
-account_mode = os.getenv('ACCOUNT_MODE','')
-cross_account_role_name = os.getenv('CROSS_ACCOUNT_ROLE_NAME','')
+## Azure SDK is in ./packages
+import sys
+sys.path.append('./packages/')
+
+from botocore.exceptions import ClientError
 
 def handle_event(message,text_output_array):
     post_to_sns = True
     #Break out the values from the JSON payload from Dome9
     rule_name = message['rule']['name']
     status = message['status']
-    entity_id = message['entity']['id']
     entity_name = message['entity']['name']
-    region = message['entity']['region']
+    cloud_provider = message['account']['vendor']
+    if cloud_provider == "Aws":
+        entity_id = message['entity']['id']
+    else: ######### Azure IDs are nested in a resource group but I'm not sure if every event comes through with an RG. Ignoring the ID for now and adding in error handling later
+        entity_id = ""
     
-    # Some events come through with 'null' as the region. If so, default to us-east-1
-    if region == None or region == "":
-        region = 'us-east-1'        
-    else:
-        region = region.replace("_","-")
-    
-    #Make sure that the event that's being referenced is for the account this function is running in.
-    event_account_id = message['account']['id']
 
     #All of the remediation values are coming in on the compliance tags and they're pipe delimited
     compliance_tags = message['rule']['complianceTags'].split("|")
+
+
 
     #evaluate the event and tags and decide is there's something to do with them. 
     if status == "Passed":
@@ -47,7 +47,7 @@ def handle_event(message,text_output_array):
         #Check the tag to see if we have AUTO: in it
         pattern = re.compile("^AUTO:\s.+")
         if pattern.match(tag):
-            text_output_array.append("Rule violation found: %s \nID: %s | Name: %s \nRemediation bot: %s \n" % (rule_name, entity_id, entity_name, tag))
+            text_output_array.append("Rule violation found: %s \nID: %s | Name: %s \nCloud: %s \nRemediation bot: %s \n" % (rule_name, entity_id, entity_name, cloud_provider, tag))
 
             # Pull out only the bot verb to run as a function
             # The format is AUTO: bot_name param1 param2
@@ -62,86 +62,28 @@ def handle_event(message,text_output_array):
             params = arr[2:]
 
             try:
-                bot_module = importlib.import_module('bots.' + bot, package=None)
+                if cloud_provider == "Aws":
+                    bot_module = importlib.import_module('aws_bots.' + bot, package=None)
+                elif cloud_provider == "Azure":
+                    bot_module = importlib.import_module('azure_bots.' + bot, package=None)
+                else:
+                    return ("Event found outside of AWS or Azure. Skipping")    
+
             except:
                 print("Error: could not find bot: " + bot)
                 text_output_array.append("Bot: %s is not a known bot. Skipping.\n" % bot)
                 continue
             
             print("Found bot '%s', about to invoke it" % bot)
-            bot_msg = ""
+
             try:
-                # Get the session info here. No point in waisting cycles running it up top if we aren't going to run an bot anyways:
-                try:
-                    #get the accountID
-                    sts = boto3.client("sts")
-                    lambda_account_id = sts.get_caller_identity()["Account"]
+                if cloud_provider == "Aws":
+                   text_output, post_to_sns, bot_msg = run_aws_bot(message,bot_module,params)
+                   text_output_array.append(text_output)
+                elif cloud_provider == "Azure":
+                   text_output, post_to_sns, bot_msg = run_azure_bot(message,bot_module,params)
+                   text_output_array.append(text_output)
 
-                except ClientError as e:
-                    text_output_array.append("Unexpected STS error: %s \n"  % e)
-
-
-                #Account mode will be set in the lambda variables. We'll default to single mdoe 
-                if lambda_account_id != event_account_id: #The remediation needs to be done outside of this account
-                    if account_mode == "multi": #multi or single account mode?
-                        #If it's not the same account, try to assume role to the new one
-                        if cross_account_role_name: # This allows users to set their own role name if they have a different naming convention they have to follow
-                            role_arn = "arn:aws:iam::" + event_account_id + ":role/" + cross_account_role_name
-                        else:
-                            role_arn = "arn:aws:iam::" + event_account_id + ":role/Dome9CloudBots"
-
-                        text_output_array.append("Compliance failure was found for an account outside of the one the function is running in. Trying to assume_role to target account %s .\n" % event_account_id) 
-
-                        try:
-                            credentials_for_event = globals()['all_session_credentials'][event_account_id]
-                            #text_output_array.append("Found existing credentials to use from still warm lambda functions. Skipping another STS assume role\n")        
-
-                        except (NameError,KeyError):
-                            #If we can't find the credentials, try to generate new ones
-                            #text_output_array.append("Session credentials weren't found cached in the function. Trying to generate new ones.\n")
-
-                            global all_session_credentials
-                            all_session_credentials = {}
-                            # create an STS client object that represents a live connection to the STS service
-                            sts_client = boto3.client('sts')
-                            
-                            # Call the assume_role method of the STSConnection object and pass the role ARN and a role session name.
-                            try:
-                                assumedRoleObject = sts_client.assume_role(
-                                    RoleArn=role_arn,
-                                    RoleSessionName="CloudBotsAutoRemedation"
-                                    )
-                                # From the response that contains the assumed role, get the temporary credentials that can be used to make subsequent API calls
-                                credentials_for_event = all_session_credentials[event_account_id] = assumedRoleObject['Credentials']
-
-                            except ClientError as e:
-                                error = e.response['Error']['Code']
-                                print(e)
-                                if error == 'AccessDenied':
-                                    text_output_array.append("Tried and failed to assume a role in the target account. Please verify that the cross account role is createad. \n")    
-                                else:
-                                    text_output = "Unexpected error: %s \n" % e
-                                continue                     
-
-                        boto_session = boto3.Session(
-                            region_name=region,         
-                            aws_access_key_id = credentials_for_event['AccessKeyId'],
-                            aws_secret_access_key = credentials_for_event['SecretAccessKey'],
-                            aws_session_token = credentials_for_event['SessionToken']
-                            )
-
-                    else:
-                        # In single account mode, we don't want to try to run bots outside of this one
-                        text_output_array.append("Error: This finding was found in account id %s. The Lambda function is running in account id: %s. Remediations need to be ran from the account there is the issue in.\n" % (event_account_id, lambda_account_id))
-                        post_to_sns = False
-                        return text_output_array,post_to_sns
-
-                else:
-                    #Boto will default to default session if we don't need assume_role credentials
-                    boto_session = boto3.Session(region_name=region)                     
-
-                ## Run the bot
-                bot_msg = bot_module.run_action(boto_session,message['rule'],message['entity'],params)
 
             except Exception as e: 
                 bot_msg = "Error while executing function '%s'.\n Error: %s \n" % (bot,e)
