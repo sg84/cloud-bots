@@ -16,7 +16,8 @@ def run_azure_bot(message,bot_module,params):
     post_to_sns = True
     found_credentials = False
 
-    source_tenant_id = message['account']['id']
+    subscription_id = message['account']['id']
+    text_output = "Azure tenant id: %s" % subscription_id
 
     # Loop through Lambda environment variables and pull in all the account keys
     # If we find a variable called azure_key<#>, pull it in and bring in the credentials
@@ -26,10 +27,10 @@ def run_azure_bot(message,bot_module,params):
             try:
                 values_dict = ast.literal_eval(value)
             except SyntaxError:
-                text_output = "Formatting error for key %s \n Please Format like {'AZURE_TENANT_ID' 'abcd', 'AZURE_CLIENT_ID': 'abcd', 'AZURE_CLIENT_SECRET': 'abcd', 'AZURE_SUBSCRIPTION_ID': 'abcd'}\nExiting\n" % key
+                text_output = text_output + "Formatting error for key %s \n Please Format like {'AZURE_TENANT_ID' 'abcd', 'AZURE_CLIENT_ID': 'abcd', 'AZURE_CLIENT_SECRET': 'abcd', 'AZURE_SUBSCRIPTION_ID': 'abcd'}\nExiting\n" % key
                 return text_output,post_to_sns,bot_msg
 
-            if source_tenant_id == values_dict['AZURE_TENANT_ID']:
+            if subscription_id == values_dict['AZURE_SUBSCRIPTION_ID']:
                 print("Found credentials for Azure tenant. Running bot.")
                 found_credentials = True
                 break
@@ -42,18 +43,18 @@ def run_azure_bot(message,bot_module,params):
             tenant=values_dict['AZURE_TENANT_ID']
             )
         except:
-            text_output = "Key error for key %s \n Please Format like {'AZURE_TENANT_ID' 'abcd', 'AZURE_CLIENT_ID': 'abcd', 'AZURE_CLIENT_SECRET': 'abcd', 'AZURE_SUBSCRIPTION_ID': 'abcd'}\nExiting\n" % key
+            text_output = text_output + "Key error for key %s \n Please Format like {'AZURE_TENANT_ID' 'abcd', 'AZURE_CLIENT_ID': 'abcd', 'AZURE_CLIENT_SECRET': 'abcd', 'AZURE_SUBSCRIPTION_ID': 'abcd'}\nExiting\n" % key
             return text_output,post_to_sns,bot_msg
 
         azure_client = {}
-        azure_client['resource'] = ResourceManagementClient(credentials, source_tenant_id)
-        azure_client['compute'] = ComputeManagementClient(credentials, source_tenant_id)
-        azure_client['network'] = NetworkManagementClient(credentials, source_tenant_id)
+        azure_client['resource'] = ResourceManagementClient(credentials, subscription_id)
+        azure_client['compute'] = ComputeManagementClient(credentials, subscription_id)
+        azure_client['network'] = NetworkManagementClient(credentials, subscription_id)
                     
         ## Run the bot
         bot_msg = bot_module.run_action(azure_client,message['rule'],message['entity'],params)
 
     else:
-        text_output = "No Azure credentials were found for this tenant. Exiting.\n" 
+        text_output = text_output + "No Azure credentials were found for this tenant. Exiting.\n" 
 
     return text_output,post_to_sns,bot_msg
