@@ -5,18 +5,13 @@ Usage: AUTO: azure_stop_vm
 '''
 
 import traceback
-
 from packages.msrestazure.azure_exceptions import CloudError
 
 def run_action(azure_client,rule,entity,params):
   text_output = ""
-  # Azure Datacenter
+
   LOCATION = entity['region']
-
-  # Resource Group
   GROUP_NAME = entity['resourceGroup']['name']
-
-  # VM Name
   VM_NAME = entity['name']
 
   try:
