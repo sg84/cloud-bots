@@ -8,6 +8,7 @@ from packages.azure.common.credentials import ServicePrincipalCredentials
 from packages.azure.mgmt.resource import ResourceManagementClient
 from packages.azure.mgmt.network import NetworkManagementClient
 from packages.azure.mgmt.compute import ComputeManagementClient
+from azure.mgmt.storage import StorageManagementClient
 
 
 def run_azure_bot(message,bot_module,params):
@@ -17,7 +18,7 @@ def run_azure_bot(message,bot_module,params):
     found_credentials = False
 
     subscription_id = message['account']['id']
-    text_output = "Azure tenant id: %s" % subscription_id
+    text_output = "Azure tenant id: %s \n" % subscription_id
 
     # Loop through Lambda environment variables and pull in all the account keys
     # If we find a variable called azure_key<#>, pull it in and bring in the credentials
@@ -50,6 +51,7 @@ def run_azure_bot(message,bot_module,params):
         azure_client['resource'] = ResourceManagementClient(credentials, subscription_id)
         azure_client['compute'] = ComputeManagementClient(credentials, subscription_id)
         azure_client['network'] = NetworkManagementClient(credentials, subscription_id)
+        azure_client['storage'] = StorageManagementClient(credentials, subscription_id)
                     
         ## Run the bot
         bot_msg = bot_module.run_action(azure_client,message['rule'],message['entity'],params)
