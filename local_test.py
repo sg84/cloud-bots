@@ -20,39 +20,40 @@ event = {
         "Message": {
   "status": "Failed",
   "policy": {
-    "name": "Alex - CloudBots"
+    "name": "AutoRemediation"
   },
   "bundle": {
-    "name": "Copy of Azure Dome9 Best Practices",
-    "description": "Dome9 Best Practices for securing Azure Account."
+    "name": "a",
+    "description": ""
   },
-  "reportTime": "2018-06-21T22:48:52.852Z",
+  "reportTime": "2018-06-27T18:55:22.51Z",
   "rule": {
-    "name": "Unused Network Security Groups",
-    "description": "Delete all security groups which are not in use.",
-    "remediation": "Delete all security groups which are not in use.",
-    "complianceTags": "AUTO: stop_vm",
+    "name": "storage_account_check",
+    "description": "",
+    "remediation": "",
+    "complianceTags": "AUTO: storage_account_require_https",
+    "severity": "High"
   },
   "account": {
-    "id": "6863828a-3f21-4624-9b05-4e5f8e8f1258",
-    "name": "Azure Demo Account",
+    "id": "057f8ae2-2a3f-4428-a903-7c5610b0e056",
+    "name": "Azure - Sandbox",
     "vendor": "Azure"
   },
-  "region": "centralus",
+  "region": "westus",
   "entity": {
     "resourceGroup": {
-      "id": "/subscriptions/6863828a-3f21-4624-9b05-4e5f8e8f1258/resourceGroups/Cfir-Full-Env",
+      "id": "/subscriptions/057f8ae2-2a3f-4428-a903-7c5610b0e056/resourceGroups/mainRG",
       "type": "ResourceGroup",
-      "name": "mainRG",
-      "dome9Id": "7|18a36b88-8d81-43d1-8897-26eada70c629|resourcegroup|cfir-full-env",
-      "accountNumber": "6863828a-3f21-4624-9b05-4e5f8e8f1258",
-      "region": "westus",
-      "source": "db",
-      "tags": []
+      "name": "mainRG"
     },
-    "name": "mytagvm",
-    "accountNumber": "6863828a-3f21-4624-9b05-4e5f8e8f1258",
-    "region": "centralus",
+    "locks": [],
+    "id": "/subscriptions/057f8ae2-2a3f-4428-a903-7c5610b0e056/resourceGroups/mainRG/providers/Microsoft.Storage/storageAccounts/mainrgdiag767",
+    "type": "StorageAccount",
+    "name": "mainrgdiag767",
+    "dome9Id": "7|9535c2fc-d3fc-4975-befa-8203b496afa8|resourcegroup|mainrg|storageaccount|mainrgdiag767",
+    "accountNumber": "057f8ae2-2a3f-4428-a903-7c5610b0e056",
+    "region": "westus",
+    "source": "db",
     "tags": []
   }
 },

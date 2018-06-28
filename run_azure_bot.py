@@ -1,6 +1,5 @@
 import os
 import json
-import ast
 import sys
 sys.path.append('./packages/')
 
@@ -23,28 +22,27 @@ def run_azure_bot(message,bot_module,params):
     # Loop through Lambda environment variables and pull in all the account keys
     # If we find a variable called azure_key<#>, pull it in and bring in the credentials
     # Check those credentials to see if we have the key for the account we want
-    for key, value in os.environ.items():
-        if "azure_key" in key:
-            try:
-                values_dict = ast.literal_eval(value)
-            except SyntaxError:
-                text_output = text_output + "Formatting error for key %s \n Please Format like {'AZURE_TENANT_ID' 'abcd', 'AZURE_CLIENT_ID': 'abcd', 'AZURE_CLIENT_SECRET': 'abcd', 'AZURE_SUBSCRIPTION_ID': 'abcd'}\nExiting\n" % key
-                return text_output,post_to_sns,bot_msg
-
-            if subscription_id == values_dict['AZURE_SUBSCRIPTION_ID']:
+    try:
+        string_azure_credentials = os.getenv('AZURE_CREDENTIALS','')
+        azure_credentials = json.loads(string_azure_credentials)
+        for key, value in azure_credentials.items():
+            if subscription_id == value['AZURE_SUBSCRIPTION_ID']:
                 print("Found credentials for Azure tenant. Running bot.")
                 found_credentials = True
-                break
+                break     
+    except:
+        text_output = text_output + "Formatting error for key %s \n Please Format like: {\n"subscriptionname1": {\n"AZURE_TENANT_ID": "abcd",\n"AZURE_CLIENT_ID": "efgh",\n"AZURE_CLIENT_SECRET": "ijkl",\n"AZURE_SUBSCRIPTION_ID": "mnop"\n},\n"subscriptionname2": {\n"AZURE_TENANT_ID": "abcd",\n"AZURE_CLIENT_ID": "efgh",\n"AZURE_CLIENT_SECRET": "ijkl",\n"AZURE_SUBSCRIPTION_ID": "mnop"\n}\n }\nExiting\n" % key
+        return text_output,post_to_sns,bot_msg
 
     if found_credentials:        
         try:
             credentials = ServicePrincipalCredentials(
-            client_id=values_dict['AZURE_CLIENT_ID'],
-            secret=values_dict['AZURE_CLIENT_SECRET'],
-            tenant=values_dict['AZURE_TENANT_ID']
+            client_id=value['AZURE_CLIENT_ID'],
+            secret=value['AZURE_CLIENT_SECRET'],
+            tenant=value['AZURE_TENANT_ID']
             )
         except:
-            text_output = text_output + "Key error for key %s \n Please Format like {'AZURE_TENANT_ID' 'abcd', 'AZURE_CLIENT_ID': 'abcd', 'AZURE_CLIENT_SECRET': 'abcd', 'AZURE_SUBSCRIPTION_ID': 'abcd'}\nExiting\n" % key
+            text_output = text_output + "Formatting error for key %s \n Please Format like: {\n"subscriptionname1": {\n"AZURE_TENANT_ID": "abcd",\n"AZURE_CLIENT_ID": "efgh",\n"AZURE_CLIENT_SECRET": "ijkl",\n"AZURE_SUBSCRIPTION_ID": "mnop"\n},\n"subscriptionname2": {\n"AZURE_TENANT_ID": "abcd",\n"AZURE_CLIENT_ID": "efgh",\n"AZURE_CLIENT_SECRET": "ijkl",\n"AZURE_SUBSCRIPTION_ID": "mnop"\n}\n }\nExiting\n" % key
             return text_output,post_to_sns,bot_msg
 
         azure_client = {}

@@ -1,6 +1,7 @@
 '''
 storage_account_require_https
 Usage: AUTO: storage_account_require_https
+Sample GSL: StorageAccount should have httpsOnlyTraffic=true
 '''
 
 import traceback
