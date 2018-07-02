@@ -31,7 +31,7 @@ def run_azure_bot(message,bot_module,params):
                 found_credentials = True
                 break     
     except:
-        text_output = text_output + "Formatting error for key %s \n Please Format like: {\n"subscriptionname1": {\n"AZURE_TENANT_ID": "abcd",\n"AZURE_CLIENT_ID": "efgh",\n"AZURE_CLIENT_SECRET": "ijkl",\n"AZURE_SUBSCRIPTION_ID": "mnop"\n},\n"subscriptionname2": {\n"AZURE_TENANT_ID": "abcd",\n"AZURE_CLIENT_ID": "efgh",\n"AZURE_CLIENT_SECRET": "ijkl",\n"AZURE_SUBSCRIPTION_ID": "mnop"\n}\n }\nExiting\n" % key
+        text_output = text_output + "Credentials formatting error\nPlease Format like: {\nsubscriptionname1: {\nAZURE_TENANT_ID: abcd,\nAZURE_CLIENT_ID: efgh,\nAZURE_CLIENT_SECRET: ijkl,\nAZURE_SUBSCRIPTION_ID: mnop\n},\nsubscriptionname2: {\nAZURE_TENANT_ID: abcd,\nAZURE_CLIENT_ID: efgh,\nAZURE_CLIENT_SECRET: ijkl,\nAZURE_SUBSCRIPTION_ID: mnop\n}\n }\nExiting\n"
         return text_output,post_to_sns,bot_msg
 
     if found_credentials:        
@@ -42,7 +42,7 @@ def run_azure_bot(message,bot_module,params):
             tenant=value['AZURE_TENANT_ID']
             )
         except:
-            text_output = text_output + "Formatting error for key %s \n Please Format like: {\n"subscriptionname1": {\n"AZURE_TENANT_ID": "abcd",\n"AZURE_CLIENT_ID": "efgh",\n"AZURE_CLIENT_SECRET": "ijkl",\n"AZURE_SUBSCRIPTION_ID": "mnop"\n},\n"subscriptionname2": {\n"AZURE_TENANT_ID": "abcd",\n"AZURE_CLIENT_ID": "efgh",\n"AZURE_CLIENT_SECRET": "ijkl",\n"AZURE_SUBSCRIPTION_ID": "mnop"\n}\n }\nExiting\n" % key
+            text_output = text_output + "Credentials formatting error\nPlease Format like: {\nsubscriptionname1: {\nAZURE_TENANT_ID: abcd,\nAZURE_CLIENT_ID: efgh,\nAZURE_CLIENT_SECRET: ijkl,\nAZURE_SUBSCRIPTION_ID: mnop\n},\nsubscriptionname2: {\nAZURE_TENANT_ID: abcd,\nAZURE_CLIENT_ID: efgh,\nAZURE_CLIENT_SECRET: ijkl,\nAZURE_SUBSCRIPTION_ID: mnop\n}\n }\nExiting\n"
             return text_output,post_to_sns,bot_msg
 
         azure_client = {}
