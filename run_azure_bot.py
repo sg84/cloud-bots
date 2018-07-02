@@ -1,7 +1,10 @@
 import os
 import json
+import boto3
 import sys
 sys.path.append('./packages/')
+
+from base64 import b64decode
 
 from packages.azure.common.credentials import ServicePrincipalCredentials
 from packages.azure.mgmt.resource import ResourceManagementClient
@@ -18,20 +21,20 @@ def run_azure_bot(message,bot_module,params):
 
     subscription_id = message['account']['id']
     text_output = "Azure tenant id: %s \n" % subscription_id
-
-    # Loop through Lambda environment variables and pull in all the account keys
-    # If we find a variable called azure_key<#>, pull it in and bring in the credentials
-    # Check those credentials to see if we have the key for the account we want
+   
     try:
-        string_azure_credentials = os.getenv('AZURE_CREDENTIALS','')
+        encrypted_credentials = os.environ['AZURE_CREDENTIALS']
+        # Decrypt code should run once and variables stored outside of the function
+        # handler so that these are decrypted once per container
+        string_azure_credentials = boto3.client('kms').decrypt(CiphertextBlob=b64decode(encrypted_credentials))['Plaintext']
         azure_credentials = json.loads(string_azure_credentials)
         for key, value in azure_credentials.items():
             if subscription_id == value['AZURE_SUBSCRIPTION_ID']:
                 print("Found credentials for Azure tenant. Running bot.")
                 found_credentials = True
-                break     
+                break    
     except:
-        text_output = text_output + "Credentials formatting error\nPlease Format like: {\nsubscriptionname1: {\nAZURE_TENANT_ID: abcd,\nAZURE_CLIENT_ID: efgh,\nAZURE_CLIENT_SECRET: ijkl,\nAZURE_SUBSCRIPTION_ID: mnop\n},\nsubscriptionname2: {\nAZURE_TENANT_ID: abcd,\nAZURE_CLIENT_ID: efgh,\nAZURE_CLIENT_SECRET: ijkl,\nAZURE_SUBSCRIPTION_ID: mnop\n}\n }\nExiting\n"
+        text_output = text_output + "Credentials formatting error while scanning for %s credentials\nExiting\n" % subscription_id
         return text_output,post_to_sns,bot_msg
 
     if found_credentials:        
@@ -42,7 +45,7 @@ def run_azure_bot(message,bot_module,params):
             tenant=value['AZURE_TENANT_ID']
             )
         except:
-            text_output = text_output + "Credentials formatting error\nPlease Format like: {\nsubscriptionname1: {\nAZURE_TENANT_ID: abcd,\nAZURE_CLIENT_ID: efgh,\nAZURE_CLIENT_SECRET: ijkl,\nAZURE_SUBSCRIPTION_ID: mnop\n},\nsubscriptionname2: {\nAZURE_TENANT_ID: abcd,\nAZURE_CLIENT_ID: efgh,\nAZURE_CLIENT_SECRET: ijkl,\nAZURE_SUBSCRIPTION_ID: mnop\n}\n }\nExiting\n"
+            text_output = text_output + "Credentials formatting error while setting up %s credentials\nExiting\n" % subscription_id
             return text_output,post_to_sns,bot_msg
 
         azure_client = {}
