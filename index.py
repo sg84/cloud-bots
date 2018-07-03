@@ -12,13 +12,9 @@ SNS_TOPIC_ARN = os.getenv('SNS_TOPIC_ARN','')
 
 #Bring the data in and parse the SNS message
 def lambda_handler(event, context):
-    print("============================")
-    print(event)
-    print("============================")
-
     text_output_array = ["-------------------------\n"]
 
-### If events come from SNS, this works. If not, check to see if they came from cloudwatch logs and GuardDuty
+    ### If events come from SNS, this works. If not, check to see if they came from cloudwatch logs and GuardDuty
     try: # Standard Dome9 event source via SNS
         raw_message = event['Records'][0]['Sns']['Message']
         message = json.loads(raw_message)
@@ -38,7 +34,6 @@ def lambda_handler(event, context):
 
     print(message) #log the input for troubleshooting
 
-    
     timestamp = "ReportTime: " + str(message['reportTime']) + "\n"
 
     text_output_array.append(timestamp)
