@@ -1,12 +1,8 @@
 import re
 import boto3
 import importlib 
-from run_aws_bot import *
-from run_azure_bot import *
-
-## Azure SDK is in ./packages
-import sys
-sys.path.append('./packages/')
+# from run_aws_bot import *
+# from run_azure_bot import *
 
 from botocore.exceptions import ClientError
 
@@ -63,8 +59,10 @@ def handle_event(message,text_output_array):
 
             try:
                 if cloud_provider == "Aws":
+                    aws_bot = importlib.import_module('run_aws_bot')
                     bot_module = importlib.import_module('aws_bots.' + bot, package=None)
                 elif cloud_provider == "Azure":
+                    azure_bot = importlib.import_module('run_azure_bot')
                     bot_module = importlib.import_module('azure_bots.' + bot, package=None)
                 else:
                     return ("Event found outside of AWS or Azure. Skipping")    
@@ -78,10 +76,10 @@ def handle_event(message,text_output_array):
 
             try:
                 if cloud_provider == "Aws":
-                   text_output, post_to_sns, bot_msg = run_aws_bot(message,bot_module,params)
+                   text_output, post_to_sns, bot_msg = aws_bot.run_aws_bot(message,bot_module,params)
                    text_output_array.append(text_output)
                 elif cloud_provider == "Azure":
-                   text_output, post_to_sns, bot_msg = run_azure_bot(message,bot_module,params)
+                   text_output, post_to_sns, bot_msg = azure_bot.run_azure_bot(message,bot_module,params)
                    text_output_array.append(text_output)
 
 
