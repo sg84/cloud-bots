@@ -1,6 +1,7 @@
 import boto3
 import json
 import os
+import importlib
 from botocore.exceptions import ClientError
 
 from handle_event import * 
@@ -11,19 +12,38 @@ SNS_TOPIC_ARN = os.getenv('SNS_TOPIC_ARN','')
 
 #Bring the data in and parse the SNS message
 def lambda_handler(event, context):
+    print("============================")
+    print(event)
+    print("============================")
 
     text_output_array = ["-------------------------\n"]
 
-    raw_message = event['Records'][0]['Sns']['Message']
-    message = json.loads(raw_message)
+### If events come from SNS, this works. If not, check to see if they came from cloudwatch logs and GuardDuty
+    try: # Standard Dome9 event source via SNS
+        raw_message = event['Records'][0]['Sns']['Message']
+        message = json.loads(raw_message)
+        
+    except KeyError: 
+        if event["source"] == "aws.guardduty": # GuardDuty event source via CW Events
+            text_output_array.append("Event Source: GuardDuty\n")
+            gd_transform_module = importlib.import_module('transform_gd_event')
+            unformatted_message = event["detail"]        
+            found_action, text_output, message = gd_transform_module.transform_gd_event(unformatted_message)
+            text_output_array.append(text_output)
+            if not found_action:
+                print(text_output_array)
+                return
+
     
+
     print(message) #log the input for troubleshooting
+
     
     timestamp = "ReportTime: " + str(message['reportTime']) + "\n"
 
     text_output_array.append(timestamp)
 
-    event_account = "Account id:" + message['account']['id'] + "\n"
+    event_account = "Account id: " + message['account']['id'] + "\n"
     text_output_array.append(event_account)
 
     try:
