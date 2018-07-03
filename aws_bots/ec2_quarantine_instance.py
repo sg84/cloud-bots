@@ -10,11 +10,15 @@ import boto3
 from botocore.exceptions import ClientError
 
 def run_action(boto_session,rule,entity,params):
-    instance_id = entity['id']
-    vpc_id = entity['vpc']['id']
-
     ec2_resource = boto_session.resource('ec2')
     ec2_client = boto_session.client('ec2')
+    instance_id = entity['id']
+    
+    try:
+        vpc_id = entity['vpc']['id']
+    except:
+        response = ec2_client.describe_instances(InstanceIds=[instance_id])
+        vpc_id = response["Reservations"][0]['Instances'][0]["VpcId"]
 
     #Check or create the Quarantine SG
     try:    
