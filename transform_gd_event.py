@@ -18,6 +18,8 @@ Sample required minimum event structure that we're formatting the event to:
   }
 }
 
+
+
 '''
 import json
 import os
@@ -61,86 +63,27 @@ def transform_gd_event(unformatted_message):
                 "region": unformatted_message["region"]
             }
         }
-
-        ### Guard Duty has 2 types of resource events - instance and accesskey. We'll conditionally format the message based on the message type
-        '''
-        Sample available resource properties for Instance:
-        "resource": {
-            "resourceType": "Instance",
-            "instanceDetails": {
-            "instanceId": "i-07711445ed3ea4d78",
-            "instanceType": "t2.micro",
-            "launchTime": "2018-06-21T08:51:00Z",
-            "platform": "windows",
-            "productCodes": [],
-            "networkInterfaces": [
-                {
-                "networkInterfaceId": "eni-6037c07b",
-                "privateIpAddresses": [
-                    {
-                    "privateDnsName": "ip-172-31-1-168.us-west-2.compute.internal",
-                    "privateIpAddress": "172.31.1.168"
-                    }
-                ],
-                "subnetId": "subnet-2186c67b",
-                "vpcId": "vpc-eab7a493",
-                "privateDnsName": "ip-172-31-1-168.us-west-2.compute.internal",
-                "securityGroups": [
-                    {
-                    "groupName": "windows-bastion",
-                    "groupId": "sg-2f55695e"
-                    }
-                ],
-                "publicIp": "34.217.53.186",
-                "ipv6Addresses": [],
-                "publicDnsName": "ec2-34-217-53-186.us-west-2.compute.amazonaws.com",
-                "privateIpAddress": "172.31.1.168"
-                }
-            ],
-            "tags": [
-                {
-                "value": "windows-bastion",
-                "key": "Name"
-                }
-            ],
-            "instanceState": "running",
-            "availabilityZone": "us-west-2c",
-            "imageId": "ami-3703414f",
-            "imageDescription": "Microsoft Windows Server 2016 with Desktop Experience Locale English AMI provided by Amazon"
-            }
-        }
-        '''
-
+        # Guard Duty has 2 types of resource events - instance and accesskey. We'll conditionally format the message based on the message type
+        # Sample resource information is at the bottom of the file
         if unformatted_message["resource"]["resourceType"] == "Instance":
             formatted_message["entity"]["id"] = unformatted_message["resource"]["instanceDetails"]["instanceId"]
             formatted_message["entity"]["vpc"] = {"id": unformatted_message["resource"]["instanceDetails"]["networkInterfaces"][0]["vpcId"]}
 
             for tag in unformatted_message["resource"]["instanceDetails"]["tags"]:
                 if tag["key"] == "name":
-                    instance_name = tag["value"]
-                    break    
-            
-            if not instance_name:
-                instance_name = ""
+                    formatted_message["entity"]["name"] = tag["value"]
+                    break                 
+            if "name" not in formatted_message["entity"]:
+                formatted_message["entity"]["name"] = ""
 
-            formatted_message["entity"]["name"] = instance_name
-        
-
-        '''
-        Sample resource properties for AccessKey:
-            "resource": {
-            "resourceType": "AccessKey",
-            "accessKeyDetails": {
-                "accessKeyId": "GeneratedFindingAccessKeyId",
-                "principalId": "GeneratedFindingPrincipalId",
-                "userType": "IAMUser",
-                "userName": "GeneratedFindingUserName"
-            }
-        '''
         elif unformatted_message["resource"]["resourceType"] == "AccessKey":
             formatted_message["entity"]["id"] = unformatted_message["resource"]["accessKeyId"]
             formatted_message["entity"]["name"] = unformatted_message["resource"]["userName"]
 
+        else:
+            text_output = "Unknown resource type found: %s. Current known resources are AccessKeys and Instance. Skipping.\n" % unformatted_message["resource"]["resourceType"]
+            found_action = False
+            return found_action, text_output, formatted_message
 
 
         text_output = text_output + "Successfully formatted GuardDuty finding and found a corresponding bot\n" 
@@ -149,3 +92,66 @@ def transform_gd_event(unformatted_message):
         text_output = text_output + "Unexpected error: %s. Exiting\n" % e
 
     return found_action, text_output, formatted_message
+
+
+
+'''
+Sample available resource properties for Instance:
+"resource": {
+    "resourceType": "Instance",
+    "instanceDetails": {
+    "instanceId": "i-07711445ed3ea4d78",
+    "instanceType": "t2.micro",
+    "launchTime": "2018-06-21T08:51:00Z",
+    "platform": "windows",
+    "productCodes": [],
+    "networkInterfaces": [
+        {
+        "networkInterfaceId": "eni-6037c07b",
+        "privateIpAddresses": [
+            {
+            "privateDnsName": "ip-172-31-1-168.us-west-2.compute.internal",
+            "privateIpAddress": "172.31.1.168"
+            }
+        ],
+        "subnetId": "subnet-2186c67b",
+        "vpcId": "vpc-eab7a493",
+        "privateDnsName": "ip-172-31-1-168.us-west-2.compute.internal",
+        "securityGroups": [
+            {
+            "groupName": "windows-bastion",
+            "groupId": "sg-2f55695e"
+            }
+        ],
+        "publicIp": "34.217.53.186",
+        "ipv6Addresses": [],
+        "publicDnsName": "ec2-34-217-53-186.us-west-2.compute.amazonaws.com",
+        "privateIpAddress": "172.31.1.168"
+        }
+    ],
+    "tags": [
+        {
+        "value": "windows-bastion",
+        "key": "Name"
+        }
+    ],
+    "instanceState": "running",
+    "availabilityZone": "us-west-2c",
+    "imageId": "ami-3703414f",
+    "imageDescription": "Microsoft Windows Server 2016 with Desktop Experience Locale English AMI provided by Amazon"
+    }
+}
+
+
+
+
+Sample resource properties for AccessKey:
+    "resource": {
+    "resourceType": "AccessKey",
+    "accessKeyDetails": {
+        "accessKeyId": "GeneratedFindingAccessKeyId",
+        "principalId": "GeneratedFindingPrincipalId",
+        "userType": "IAMUser",
+        "userName": "GeneratedFindingUserName"
+    }
+'''
