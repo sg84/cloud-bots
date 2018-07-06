@@ -14,12 +14,12 @@ Sample required minimum event structure that we're formatting the event to:
   "entity": {
     "id": "i-0028f9751d334c93a",
     "name": "TestInstance",
-    "region": "us_west_2"
+    "region": "us_west_2",
+    "vpc": {
+        "id": "vpc-1234"
+    }
   }
 }
-
-
-
 '''
 import json
 import os
@@ -39,11 +39,15 @@ def transform_gd_event(unformatted_message):
                 break    
 
     except Exception as e:
-        text_output = "Unexpected error %s \n Please check the formatting of the GD_ACTIONS env variable in Lambda\n Exiting\n" % e
+        if unformatted_message["eventName"] == "UnarchiveFindings":
+            print("GuardDuty finding was unarchaived. Skipping.\n Event:\n %s \n" % unformatted_message)
+        else:    
+            text_output = "Unexpected error %s \n Please check the formatting of the GD_ACTIONS env variable in Lambda\n Exiting\n Event:\n %s \n" % (e,unformatted_message)
+        
         return found_action, text_output, formatted_message
     
     if not found_action:
-        text_output = "GuardDuty event found but no bots were defined for the event %s. Skipping\n" % unformatted_message["type"] 
+        print("GuardDuty event found but no bots were defined for the event %s. Skipping.\n Event:\n %s \n" % (unformatted_message["type"],unformatted_message))
         return found_action, text_output, formatted_message
 
     try:
@@ -65,6 +69,8 @@ def transform_gd_event(unformatted_message):
         }
         # Guard Duty has 2 types of resource events - instance and accesskey. We'll conditionally format the message based on the message type
         # Sample resource information is at the bottom of the file
+
+        # Instance type
         if unformatted_message["resource"]["resourceType"] == "Instance":
             formatted_message["entity"]["id"] = unformatted_message["resource"]["instanceDetails"]["instanceId"]
             formatted_message["entity"]["vpc"] = {"id": unformatted_message["resource"]["instanceDetails"]["networkInterfaces"][0]["vpcId"]}
@@ -75,7 +81,8 @@ def transform_gd_event(unformatted_message):
                     break                 
             if "name" not in formatted_message["entity"]:
                 formatted_message["entity"]["name"] = ""
-
+        
+        # Access Key type
         elif unformatted_message["resource"]["resourceType"] == "AccessKey":
             formatted_message["entity"]["id"] = unformatted_message["resource"]["accessKeyId"]
             formatted_message["entity"]["name"] = unformatted_message["resource"]["userName"]
