@@ -76,7 +76,7 @@ def transform_gd_event(unformatted_message):
             formatted_message["entity"]["vpc"] = {"id": unformatted_message["resource"]["instanceDetails"]["networkInterfaces"][0]["vpcId"]}
 
             for tag in unformatted_message["resource"]["instanceDetails"]["tags"]:
-                if tag["key"] == "name":
+                if tag["key"] == "Name":
                     formatted_message["entity"]["name"] = tag["value"]
                     break                 
             if "name" not in formatted_message["entity"]:
