@@ -19,7 +19,7 @@ def run_action(azure_client,rule,entity,params):
     text_output = "Updating setting for enabling HTTPS only traffic on Storage Account: %s \n" % storage_account_name
 
     # Update storage account
-    print('Update storage account')
+    print('Updating storage account')
     storage_account = azure_client['storage'].storage_accounts.update(
         resource_group_name, 
         storage_account_name,
