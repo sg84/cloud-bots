@@ -17,12 +17,9 @@ def handle_event(message,text_output_array):
         entity_id = message['entity']['id']
     else: ######### Azure IDs are nested in a resource group but I'm not sure if every event comes through with an RG. Ignoring the ID for now and adding in error handling later
         entity_id = ""
-    
 
     #All of the remediation values are coming in on the compliance tags and they're pipe delimited
     compliance_tags = message['rule']['complianceTags'].split("|")
-
-
 
     #evaluate the event and tags and decide is there's something to do with them. 
     if status == "Passed":
@@ -58,29 +55,32 @@ def handle_event(message,text_output_array):
             params = arr[2:]
 
             try:
-                if cloud_provider == "Aws":
+                if cloud_provider == "AWS":
                     aws_bot = importlib.import_module('run_aws_bot')
                     bot_module = importlib.import_module('aws_bots.' + bot, package=None)
                 elif cloud_provider == "Azure":
                     azure_bot = importlib.import_module('run_azure_bot')
                     bot_module = importlib.import_module('azure_bots.' + bot, package=None)
                 else:
-                    return ("Event found outside of AWS or Azure. Skipping")    
+                    post_to_sns = False
+                    text_output_array.append("Event found outside of AWS or Azure. Skipping")
+                    return text_output_array,post_to_sns
+                    
 
-            except:
+            except Exception as e:
                 print("Error: could not find bot: " + bot)
+                print("ERROR MESSAGE: %s" % e) 
                 text_output_array.append("Bot: %s is not a known bot. Skipping.\n" % bot)
                 continue
             
             print("Found bot '%s', about to invoke it" % bot)
-
             try:
-                if cloud_provider == "Aws":
-                   text_output, post_to_sns, bot_msg = aws_bot.run_aws_bot(message,bot_module,params)
-                   text_output_array.append(text_output)
+                if cloud_provider == "AWS":
+                    text_output, post_to_sns, bot_msg = aws_bot.run_aws_bot(message,bot_module,params)
+                    text_output_array.append(text_output)
                 elif cloud_provider == "Azure":
-                   text_output, post_to_sns, bot_msg = azure_bot.run_azure_bot(message,bot_module,params)
-                   text_output_array.append(text_output)
+                    text_output, post_to_sns, bot_msg = azure_bot.run_azure_bot(message,bot_module,params)
+                    text_output_array.append(text_output)
 
 
             except Exception as e: 
