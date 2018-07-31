@@ -18,9 +18,10 @@ def lambda_handler(event, context):
     try: # Standard Dome9 event source via SNS
         raw_message = event['Records'][0]['Sns']['Message']
         message = json.loads(raw_message)
-        
-    except KeyError: 
-        if event["source"] == "aws.guardduty": # GuardDuty event source via CW Events
+
+        # Check for source. Transform it to "Dome9" format if it's not originating from Dome9. 
+        # This expects that GD is triggering lambda via SNS. This is neeeded for running cross-region GD events. 
+        if "source" in message and message["source"] == "aws.guardduty": # GuardDuty event source via CW Events
             text_output_array.append("Event Source: GuardDuty\n")
             gd_transform_module = importlib.import_module('transform_gd_event')
             unformatted_message = event["detail"]        
@@ -28,9 +29,10 @@ def lambda_handler(event, context):
             text_output_array.append(text_output)
             if not found_action:
                 print(text_output_array)
-                return
-
-    
+                return      
+    except: 
+        print("Unexpected error. Exiting")
+        return
 
     print(message) #log the input for troubleshooting
 
