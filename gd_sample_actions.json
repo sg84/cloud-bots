@@ -7,185 +7,53 @@ In the "bot" value, put the required syntax in for the bot you want to run. If y
 Example:
 
 {
-    "Backdoor:EC2/XORDDOS": {
-        "name": "Turn off Instance - critical issue",
-        "bot": "AUTO: ec2_stop_instance"
-    },
-    "Backdoor:EC2/Spambot": {
-        "name": "Quarantine instance for future troubleshooting",
-        "bot": "AUTO: ec2_quarantine_instance"
-    }
+    "Backdoor:EC2/XORDDOS": "AUTO: ec2_stop_instance",
+    "Backdoor:EC2/Spambot": "AUTO: ec2_quarantine_instance"
 }
 
 ================Full Object=============
 
 {
-    "Backdoor:EC2/XORDDOS": {
-        "name": "",
-        "bot": ""
-    },
-    "Backdoor:EC2/Spambot": {
-        "name": "",
-        "bot": ""
-    },
-    "Backdoor:EC2/C&CActivity.B!DNS": {
-        "name": "",
-        "bot": ""
-    },
-    "Behavior:EC2/NetworkPortUnusual": {
-        "name": "",
-        "bot": ""
-    },
-    "Behavior:EC2/TrafficVolumeUnusual": {
-        "name": "",
-        "bot": ""
-    },
-    "CryptoCurrency:EC2/BitcoinTool.B!DNS": {
-        "name": "",
-        "bot": ""
-    },
-    "PenTest:IAMUser/KaliLinux": {
-        "name": "",
-        "bot": ""
-    },
-    "Persistence:IAMUser/NetworkPermissions": {
-        "name": "",
-        "bot": ""
-    },
-    "Persistence:IAMUser/ResourcePermissions": {
-        "name": "",
-        "bot": ""
-    },
-    "Persistence:IAMUser/UserPermissions": {
-        "name": "",
-        "bot": ""
-    },
-    "Recon:EC2/PortProbeUnprotectedPort": {
-        "name": "",
-        "bot": ""
-    },
-    "Recon:IAMUser/TorIPCaller": {
-        "name": "",
-        "bot": ""
-    },
-    "Recon:IAMUser/MaliciousIPCaller.Custom": {
-        "name": "",
-        "bot": ""
-    },
-    "Recon:IAMUser/MaliciousIPCaller": {
-        "name": "",
-        "bot": ""
-    },
-    "Recon:EC2/Portscan": {
-        "name": "",
-        "bot": ""
-    },
-    "Recon:IAMUser/NetworkPermissions": {
-        "name": "",
-        "bot": ""
-    },
-    "Recon:IAMUser/ResourcePermissions": {
-        "name": "",
-        "bot": ""
-    },
-    "Recon:IAMUser/UserPermissions": {
-        "name": "",
-        "bot": ""
-    },
-    "ResourceConsumption:IAMUser/ComputeResources": {
-        "name": "",
-        "bot": ""
-    },
-    "Stealth:IAMUser/PasswordPolicyChange": {
-        "name": "",
-        "bot": ""
-    },
-    "Stealth:IAMUser/CloudTrailLoggingDisabled": {
-        "name": "",
-        "bot": ""
-    },
-    "Stealth:IAMUser/LoggingConfigurationModified": {
-        "name": "",
-        "bot": ""
-    },
-    "Trojan:EC2/BlackholeTraffic": {
-        "name": "",
-        "bot": ""
-    },
-    "Trojan:EC2/DropPoint": {
-        "name": "",
-        "bot": ""
-    },
-    "Trojan:EC2/BlackholeTraffic!DNS": {
-        "name": "",
-        "bot": ""
-    },
-    "Trojan:EC2/DriveBySourceTraffic!DNS": {
-        "name": "",
-        "bot": ""
-    },
-    "Trojan:EC2/DropPoint!DNS": {
-        "name": "",
-        "bot": ""
-    },
-    "Trojan:EC2/DGADomainRequest.B": {
-        "name": "",
-        "bot": ""
-    },
-    "Trojan:EC2/DGADomainRequest.C!DNS": {
-        "name": "",
-        "bot": ""
-    },
-    "Trojan:EC2/DNSDataExfiltration": {
-        "name": "",
-        "bot": ""
-    },
-    "Trojan:EC2/PhishingDomainRequest!DNS": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:IAMUser/TorIPCaller": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:IAMUser/MaliciousIPCaller.Custom": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:IAMUser/ConsoleLoginSuccess.B": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:IAMUser/MaliciousIPCaller": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:IAMUser/UnusualASNCaller": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:EC2/TorIPCaller": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:EC2/MaliciousIPCaller.Custom": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:EC2/SSHBruteForce": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:EC2/RDPBruteForce": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration": {
-        "name": "",
-        "bot": ""
-    },
-    "UnauthorizedAccess:IAMUser/ConsoleLogin": {
-        "name": "",
-        "bot": ""
+    "Backdoor:EC2/XORDDOS": "",
+    "Backdoor:EC2/Spambot": "",
+    "Backdoor:EC2/C&CActivity.B!DNS": "",
+    "Behavior:EC2/NetworkPortUnusual": "",
+    "Behavior:EC2/TrafficVolumeUnusual": "",
+    "CryptoCurrency:EC2/BitcoinTool.B!DNS": "",
+    "PenTest:IAMUser/KaliLinux": "",
+    "Persistence:IAMUser/NetworkPermissions": "",
+    "Persistence:IAMUser/ResourcePermissions": "",
+    "Persistence:IAMUser/UserPermissions": "",
+    "Recon:EC2/PortProbeUnprotectedPort": "",
+    "Recon:IAMUser/TorIPCaller": "",
+    "Recon:IAMUser/MaliciousIPCaller.Custom": "",
+    "Recon:IAMUser/MaliciousIPCaller": "",
+    "Recon:EC2/Portscan": "",
+    "Recon:IAMUser/NetworkPermissions": "",
+    "Recon:IAMUser/ResourcePermissions": "",
+    "Recon:IAMUser/UserPermissions": "",
+    "ResourceConsumption:IAMUser/ComputeResources": "",
+    "Stealth:IAMUser/PasswordPolicyChange": "",
+    "Stealth:IAMUser/CloudTrailLoggingDisabled": "",
+    "Stealth:IAMUser/LoggingConfigurationModified": "",
+    "Trojan:EC2/BlackholeTraffic": "",
+    "Trojan:EC2/DropPoint": "",
+    "Trojan:EC2/BlackholeTraffic!DNS": "",
+    "Trojan:EC2/DriveBySourceTraffic!DNS": "",
+    "Trojan:EC2/DropPoint!DNS": "",
+    "Trojan:EC2/DGADomainRequest.B": "",
+    "Trojan:EC2/DGADomainRequest.C!DNS": "",
+    "Trojan:EC2/DNSDataExfiltration": "",
+    "Trojan:EC2/PhishingDomainRequest!DNS": "",
+    "UnauthorizedAccess:IAMUser/TorIPCaller": "",
+    "UnauthorizedAccess:IAMUser/MaliciousIPCaller.Custom": "",
+    "UnauthorizedAccess:IAMUser/ConsoleLoginSuccess.B": "",
+    "UnauthorizedAccess:IAMUser/MaliciousIPCaller": "",
+    "UnauthorizedAccess:IAMUser/UnusualASNCaller": "",
+    "UnauthorizedAccess:EC2/TorIPCaller": "",
+    "UnauthorizedAccess:EC2/MaliciousIPCaller.Custom": "",
+    "UnauthorizedAccess:EC2/SSHBruteForce": "",
+    "UnauthorizedAccess:EC2/RDPBruteForce": "",
+    "UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration": "",
+    "UnauthorizedAccess:IAMUser/ConsoleLogin": ""
     }
-}    
