@@ -14,10 +14,15 @@ SNS_TOPIC_ARN = os.getenv('SNS_TOPIC_ARN','')
 def lambda_handler(event, context):
     text_output_array = ["-------------------------\n"]
 
+    raw_message = event['Records'][0]['Sns']['Message']
+    print(raw_message) #CW Logs prints JSON prettier. Printing this for easier recreation. 
+
     ### If events come from SNS, this works. If not, check to see if they came from cloudwatch logs and GuardDuty
     try: # Standard Dome9 event source via SNS
-        raw_message = event['Records'][0]['Sns']['Message']
-        message = json.loads(raw_message)
+        try:
+            message = json.loads(raw_message)
+        except: # If the event comes through as a dict, take it as it comes
+            message = raw_message
 
         # Check for source. Transform it to "Dome9" format if it's not originating from Dome9. 
         # This expects that GD is triggering lambda via SNS. This is neeeded for running cross-region GD events. 
@@ -31,7 +36,7 @@ def lambda_handler(event, context):
                 print(text_output_array)
                 return      
     except: 
-        print("Unexpected error. Exiting")
+        print("Unexpected error. Exiting!")
         return
 
     print(message) #log the input for troubleshooting
