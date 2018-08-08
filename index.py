@@ -20,36 +20,34 @@ def lambda_handler(event, context):
     ### If events come from SNS, this works. If not, check to see if they came from cloudwatch logs and GuardDuty
     try: # Standard Dome9 event source via SNS
         try:
-            message = json.loads(raw_message)
+            source_message = json.loads(raw_message)
         except: # If the event comes through as a dict, take it as it comes
-            message = raw_message
-
+            source_message = raw_message
         # Check for source. Transform it to "Dome9" format if it's not originating from Dome9. 
         # This expects that GD is triggering lambda via SNS. This is neeeded for running cross-region GD events. 
-        if "source" in message and message["source"] == "aws.guardduty": # GuardDuty event source via CW Events
+        if "source" in source_message and source_message["source"] == "aws.guardduty": # GuardDuty event source via CW Events
             text_output_array.append("Event Source: GuardDuty\n")
             gd_transform_module = importlib.import_module('transform_gd_event')
-            unformatted_message = event["detail"]        
-            found_action, text_output, message = gd_transform_module.transform_gd_event(unformatted_message)
+            found_action, text_output, source_message = gd_transform_module.transform_gd_event(source_message)
             text_output_array.append(text_output)
             if not found_action:
                 print(text_output_array)
                 return      
     except: 
-        print("Unexpected error. Exiting!")
+        print("Unexpected error. Exiting.")
         return
 
-    print(message) #log the input for troubleshooting
+    print(source_message) #log the input for troubleshooting
 
-    timestamp = "ReportTime: " + str(message['reportTime']) + "\n"
+    timestamp = "ReportTime: " + str(source_message['reportTime']) + "\n"
 
     text_output_array.append(timestamp)
 
-    event_account = "Account id: " + message['account']['id'] + "\n"
+    event_account = "Account id: " + source_message['account']['id'] + "\n"
     text_output_array.append(event_account)
 
     try:
-        text_output_array, post_to_sns = handle_event(message,text_output_array)
+        text_output_array, post_to_sns = handle_event(source_message,text_output_array)
     except Exception as e: 
         post_to_sns = True
         text_output_array.append("Handle_event failed\n")
