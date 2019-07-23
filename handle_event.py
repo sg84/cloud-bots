@@ -4,6 +4,9 @@ import boto3
 import importlib
 from botocore.exceptions import ClientError
 
+MININAL_TAG_LENGTH = 2
+MININAL_ACTION_LENGTH = 1
+
 account_mode = os.getenv('ACCOUNT_MODE', '')
 cross_account_role_name = os.getenv('CROSS_ACCOUNT_ROLE_NAME', '')
 
@@ -31,6 +34,7 @@ def get_data_from_message(message):
         data['remediationActions'] = message['remediationActions']
     return data
 
+
 def get_bots_from_finding(compliance_tags, remediation_actions):
     bots = []
     # Check if any of the tags have AUTO: in them. If there's nothing to do at all, skip it.
@@ -41,7 +45,7 @@ def get_bots_from_finding(compliance_tags, remediation_actions):
         if auto_pattern.match(tag):
             tag_pattern = tuple(tag.split(' '))
             # The format is AUTO: bot_name param1 param2
-            if len(tag_pattern) < 2:
+            if len(tag_pattern) < MININAL_TAG_LENGTH:
                 continue
             tag, bot, *params = tag_pattern
             bots.append([bot, params])
@@ -49,7 +53,7 @@ def get_bots_from_finding(compliance_tags, remediation_actions):
     for action in remediation_actions:
         action_pattern = tuple(action.split(' '))
         # The format is bot_name param1 param2
-        if len(action_pattern) < 1:
+        if len(action_pattern) < MININAL_ACTION_LENGTH:
             continue
         bot, *params = action_pattern
         bots.append((bot, params))
@@ -73,6 +77,7 @@ def handle_event(message, output_message):
     if not bots or not len(bots):
         print(f'''{__file__} - Rule: {message_data.get('rule_name')} Doesnt have any bots to run. Skipping.''')
         return False
+
     for bot_to_run in bots:
         bot_data = {}
         bot_data['Rule'] = message_data.get('rule_name')
