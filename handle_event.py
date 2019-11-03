@@ -88,7 +88,7 @@ def handle_event(message, output_message):
         print(f'''{__file__} - Bot name to execute: {bot}''')
         try:
             bot_module = importlib.import_module(''.join(['bots.', bot]), package=None)
-        except:
+        except Exception as e:
             print(f'{__file__} - Error - could not find bot: {bot}')
             bot_data['Bot'] = f'{bot} is not a known bot. skipping'
             continue
@@ -110,7 +110,7 @@ def handle_event(message, output_message):
                 # If it's not the same account, try to assume role to the new one
                 role_arn = ''.join(['arn:aws:iam::', event_account_id, ':role/'])
                 # This allows users to set their own role name if they have a different naming convention they have to follow
-                role_arn = ''.join([role_arn, cross_account_role_name]) if cross_account_role_name else ''.join([role_arn, 'Dome9CloudBots'])
+                role_arn = ''.join([role_arn, cross_account_role_name]) if cross_account_role_name else ''.join([role_arn, 'adf-dome9cloudbots'])
                 bot_data[ 'Compliance failure was found for an account outside of the one the function is running in. Trying to assume_role to target account'] = event_account_id
 
                 try:
@@ -151,10 +151,8 @@ def handle_event(message, output_message):
                 )
 
             else:
-                # In single account mode, we don't want to try to run bots outside of this account therefore error , the lambda will exit with error
+                # In single account mode, we don't want to try to run bots outside of this account therefore error
                 bot_data['Error'] = f'This finding was found in account id {event_account_id}. The Lambda function is running in account id: {lambda_account_id}. Remediations need to be ran from the account there is the issue in.'
-                output_message['Rules violations found'].append(bot_data.copy())
-                continue
 
         else:  # Boto will default to default session if we don't need assume_role credentials
             boto_session = boto3.Session(region_name=message_data.get('region'))
