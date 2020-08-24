@@ -60,7 +60,7 @@ def run_action(boto_session, rule, entity, params):
             if not utils.is_scope_contained_by_other_ipv4(rule[SCOPE], scope):
                 # rule scope is outside of the scope given , hence need to be deleted
                 text_output = text_output + utils.stringify_rule(
-                    rule) + 'rule was found in security group with port in range; '
+                    rule) + 'rule was found in security group with scope out of range; '
                 text_output = utils.delete_sg(sg, sg_id, rule, direction, text_output)
 
         else:
